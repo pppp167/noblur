@@ -7,9 +7,7 @@
   <meta name="theme-color" content="#303790">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  
-  <!-- ใช้ black-translucent เพื่อให้หน้าเว็บคลุมพื้นที่ 100% -->
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <title>ThaID Full Feature</title>
 
@@ -24,7 +22,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <script>
-    // Detect an iOS Home Screen web app before layout so only that mode gets extra top clearance.
     (function markHomeScreenApp() {
       const standalone = window.navigator.standalone === true ||
         window.matchMedia('(display-mode: standalone)').matches ||
@@ -41,6 +38,24 @@
       margin: 0;
       background: #303790;
       overflow: hidden;
+    }
+
+    #privacy-screen {
+      position: fixed;
+      top: -20px; left: -20px; right: -20px; bottom: -20px;
+      z-index: 2147483647;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: none;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    #privacy-screen.is-visible {
+      opacity: 1;
+      visibility: visible;
+      -webkit-backdrop-filter: blur(32px);
+      backdrop-filter: blur(32px);
     }
 
     body {
@@ -74,17 +89,15 @@
       flex-shrink: 0;
       position: relative;
       z-index: 50;
-      /* ขยับขึ้น: ใช้ safe area จริงของเครื่อง + ช่องไฟตามความสูงจอ แทนค่าตายตัว 62px */
-      padding: calc(env(safe-area-inset-top, 0px) + clamp(12px, 2.2vh, 20px)) 20px 8px 20px;
+      padding: max(calc(env(safe-area-inset-top) + 8px), clamp(52px, 9vh, 72px)) 20px clamp(6px, 1.2vh, 10px) 20px;
       padding-left: clamp(10px, 3vw, 18px);
       isolation: isolate;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
 
-    /* ตอนเพิ่มไปหน้าโฮม: ใต้แถบสถานะ (อย่างน้อย 20px เผื่อเครื่องที่รายงาน safe area เป็น 0) + ช่องไฟตามความสูงจอ */
     html.is-home-screen-app header {
-      padding-top: calc(max(env(safe-area-inset-top, 0px), 20px) + clamp(4px, 1.2vh, 12px));
+      padding-top: var(--home-top-pad, max(calc(env(safe-area-inset-top) + 12px), clamp(64px, 11vh, 88px)));
     }
 
     .header-top { display: flex; justify-content: space-between; align-items: center; }
@@ -112,10 +125,9 @@
     }
     .header-icons i:active { background: rgba(0, 0, 0, 0.4); }
 
-    /* ===== ป้าย ONLINE ===== */
     .online-badge {
-      background: #22c55e; color: white; 
-      font-size: 9px; 
+      background: #22c55e; color: white;
+      font-size: 9px;
       font-weight: 400;
       padding: 2px 8px;
       border-radius: 50px;
@@ -137,7 +149,7 @@
     .main-scroll-area::-webkit-scrollbar { display: none; }
 
     .blue-section {
-      padding: 0 clamp(18px, 4vw, 24px) 10px;
+      padding: 0 clamp(18px, 4vw, 24px) 6px;
       position: relative;
       z-index: 10;
       display: flex;
@@ -185,7 +197,7 @@
     .lock-text { font-size: 17px; font-weight: 600; color: #333; }
 
     .card-action-bar {
-      margin-top: 10px;
+      margin-top: 6px;
       display: flex;
       justify-content: center;
       gap: 12px;
@@ -209,9 +221,7 @@
       font-family: inherit;
     }
 
-    .card-action-btn:active {
-      transform: scale(0.95);
-    }
+    .card-action-btn:active { transform: scale(0.95); }
 
     .card-action-btn.icon-only {
       padding: 0;
@@ -228,14 +238,19 @@
       flex: 1;
       background: #ffffff;
       border-radius: 24px 24px 0 0;
-      margin-top: 8px;
-      padding-top: 20px; /* ปรับลดลงเล็กน้อยให้ดึงเนื้อหาขึ้น */
+      margin-top: 4px;
+      padding-top: clamp(16px, 2.5vh, 26px);
       position: relative;
       z-index: 20;
-      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+      padding-bottom: calc(clamp(64px, 9vh, 86px) + env(safe-area-inset-bottom));
     }
 
-    .section-title { display: flex; justify-content: space-between; align-items: center; margin: 0 20px 16px 20px; }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 20px 10px 20px;
+    }
     .section-title h2 { font-size: 17px; color: #333; font-weight: 700; }
     .section-title a { font-size: 13px; color: #888; text-decoration: none; font-weight: 500;}
 
@@ -287,14 +302,13 @@
     .dot-indicator { width: 8px; height: 8px; border-radius: 50%; background-color: #d1d5db; transition: all 0.3s ease; }
     .dot-indicator.active { width: 24px; border-radius: 4px; background-color: #303790; }
 
-    /* ปรับให้ช่องประกาศชิดหัวข้อมากขึ้น */
-    .announcement-vertical-list { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 12px; 
-      padding: 0 20px; 
-      margin-bottom: 20px; 
-      margin-top: 4px; /* เพิ่มระยะห่างจากหัวข้อเล็กน้อย */
+    .announcement-vertical-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 20px;
+      margin-top: -4px;
+      margin-bottom: 16px;
     }
 
     .announcement-vertical-box {
@@ -312,14 +326,13 @@
       color: #9ca3af; font-size: 24px; z-index: 0;
     }
 
-    /* ===== แถบนำทางด้านล่าง (Bottom Nav) ===== */
     .bottom-nav {
       position: absolute;
       left: 0; right: 0; bottom: 0;
       width: auto;
       background: white;
       display: flex; justify-content: space-around; align-items: center;
-      padding: clamp(10px, 2.5vw, 14px) clamp(4px, 1.5vw, 12px) max(clamp(14px, 3.5vw, 22px), env(safe-area-inset-bottom)) clamp(4px, 1.5vw, 12px);
+      padding: clamp(8px, 2vh, 14px) clamp(4px, 1.5vw, 12px) max(clamp(12px, 3vh, 22px), env(safe-area-inset-bottom)) clamp(4px, 1.5vw, 12px);
       border-top: 1px solid #eee;
       z-index: 30;
     }
@@ -330,7 +343,7 @@
       align-items: center;
       gap: clamp(4px, 1.2vw, 8px);
       color: #4b5563;
-      font-size: clamp(11px, 3vw, 14px); 
+      font-size: clamp(11px, 3vw, 14px);
       background: none;
       border: none;
       cursor: pointer;
@@ -343,7 +356,7 @@
     }
 
     .nav-item.active {
-      color: #111c8b; 
+      color: #111c8b;
       font-weight: 600;
     }
 
@@ -357,23 +370,22 @@
       border-radius: 2px;
     }
 
-    /* ปรับความหนาเส้น SVG ใน bottom nav เป็น 1.8 */
     .nav-item svg {
       display: block;
       flex-shrink: 0;
-      width: clamp(26px, 7.5vw, 34px);
-      height: clamp(26px, 7.5vw, 34px);
+      width: clamp(24px, 6.5vw, 32px);
+      height: clamp(24px, 6.5vw, 32px);
       margin-bottom: 2px;
-      stroke-width: 1.8; 
+      stroke-width: 1.8;
     }
 
     .nav-scan {
-      margin-top: clamp(-45px, -11vw, -32px); 
+      margin-top: clamp(-45px, -11vw, -32px);
     }
 
     .scan-btn {
-      width: clamp(68px, 18vw, 84px); 
-      height: clamp(68px, 18vw, 84px);
+      width: clamp(62px, 16vw, 82px);
+      height: clamp(62px, 16vw, 82px);
       background: #303790;
       border-radius: 50%;
       display: flex;
@@ -464,6 +476,8 @@
     .back-btn,
     .header-icons-expanded .icon-btn {
       background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: none;
       color: #ffffff;
       width: 46px; height: 46px; border-radius: 50%;
@@ -525,9 +539,21 @@
     .reset-btn:hover, .reset-btn:active { opacity: 1; background: rgba(255, 0, 0, 0.8); border-color: red; }
 
     .solid-box-icon { stroke: none !important; }
+
+    /* ===== ไม่ให้ privacy blur มีผลกับ modal ขยายบัตร ===== */
+    #expandModal.is-privacy-blurred,
+    #expandModal .expand-header,
+    #expandModal .expand-card-container {
+      filter: none !important;
+      -webkit-filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
   </style>
 </head>
 <body>
+  <div id="privacy-screen" aria-hidden="true"></div>
+
   <input type="file" id="uploadBanner1" accept="image/*" onchange="handleImageUpload(event, 'banner1')">
   <input type="file" id="uploadBanner2" accept="image/*" onchange="handleImageUpload(event, 'banner2')">
 
@@ -685,13 +711,13 @@
           <div class="dot-indicator" id="dot2"></div>
         </div>
 
-        <div class="section-title" style="margin-top: 0; margin-bottom: 10px;">
+        <div class="section-title" style="margin-top: 4px; margin-bottom: 10px;">
           <h2>ประกาศทั้งหมด</h2>
           <a href="#">ทั้งหมด <i class="fa-solid fa-chevron-right" style="font-size:11px;"></i></a>
         </div>
 
         <div class="announcement-vertical-list">
-          <div class="announcement-vertical-box" onclick="document.getElementById('uploadAnn1').click()" style="margin-top: 0;">
+          <div class="announcement-vertical-box" onclick="document.getElementById('uploadAnn1').click()">
             <div class="banner-placeholder" id="annBg1"><i class="fa-solid fa-image"></i></div>
             <img src="" alt="Announce 1" class="banner-bg-img" id="annImg1" style="display: none;">
           </div>
@@ -713,7 +739,7 @@
           </div>
         </div>
 
-        <div style="height: 10px;"></div>
+        <div style="height: 16px;"></div>
       </div>
     </div>
 
@@ -727,18 +753,15 @@
         </svg>
       </div>
 
-      <!-- ไอคอนหน้าหลัก (ลดขนาดประตูลง) -->
       <button class="nav-item active">
         <svg class="nav-home-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"/>
           <path d="M2 11l10-8 10 8"/>
-          <!-- ประตูบ้านทำเล็กลง (จาก 9-15 เป็น 10-14) -->
           <path d="M10 21v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/>
         </svg>
         <span>หน้าหลัก</span>
       </button>
-      
-      <!-- ไอคอนเอกสาร -->
+
       <button class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -749,7 +772,6 @@
         <span>เอกสาร</span>
       </button>
 
-      <!-- ไอคอนสแกน -->
       <button class="nav-item nav-scan">
         <div class="scan-btn">
           <svg viewBox="0 0 24 24" class="scan-icon">
@@ -765,7 +787,6 @@
         <span>สแกน</span>
       </button>
 
-      <!-- ไอคอนประวัติ -->
       <button class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
@@ -775,7 +796,6 @@
         <span>ประวัติ</span>
       </button>
 
-      <!-- ไอคอนตั้งค่า (ปรับให้ใหญ่ขึ้นและบาลานซ์กัน) -->
       <button class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="8" x2="21" y2="8"></line>
@@ -835,7 +855,95 @@
   </div>
 
   <script>
-    // ลบระบบ Privacy Screen ออกตามคำขอ แต่ยังคงตัวแปรและฟังก์ชัน Carousel ไว้ครบถ้วน
+    (function setupAppSwitcherPrivacy() {
+      const screen = document.getElementById('privacy-screen');
+      const app = document.querySelector('.app-container');
+      const expandedCardModal = document.getElementById('expandModal');
+      const root = document.documentElement;
+      if (!screen) return;
+      let edgeSwipeStartY = null;
+
+      const showPrivacyScreen = () => {
+        root.classList.add('is-privacy-active');
+        if (app) app.classList.add('is-privacy-blurred');
+        screen.classList.add('is-visible');
+      };
+      const hidePrivacyScreen = () => {
+        screen.classList.remove('is-visible');
+        root.classList.remove('is-privacy-active');
+        if (app) app.classList.remove('is-privacy-blurred');
+        if (expandedCardModal) expandedCardModal.classList.remove('is-privacy-blurred');
+      };
+
+      hidePrivacyScreen();
+
+      document.addEventListener('touchstart', (event) => {
+        const touch = event.touches && event.touches[0];
+        if (!touch) return;
+        edgeSwipeStartY = touch.clientY >= window.innerHeight - 36 ? touch.clientY : null;
+        if (edgeSwipeStartY === null && document.visibilityState === 'visible') {
+          hidePrivacyScreen();
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (event) => {
+        const touch = event.touches && event.touches[0];
+        if (edgeSwipeStartY === null || !touch) return;
+        if (edgeSwipeStartY - touch.clientY > 20) {
+          showPrivacyScreen();
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', () => {
+        edgeSwipeStartY = null;
+      }, { passive: true });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') showPrivacyScreen();
+        else hidePrivacyScreen();
+      });
+      document.addEventListener('webkitvisibilitychange', () => {
+        if (document.visibilityState === 'hidden') showPrivacyScreen();
+        else if (document.visibilityState === 'visible') hidePrivacyScreen();
+        else if (document.webkitHidden === true) showPrivacyScreen();
+        else hidePrivacyScreen();
+      });
+
+      window.addEventListener('pagehide', showPrivacyScreen);
+      window.addEventListener('pageshow', hidePrivacyScreen);
+      window.addEventListener('focus', hidePrivacyScreen);
+      window.addEventListener('resume', hidePrivacyScreen);
+      document.addEventListener('resume', hidePrivacyScreen);
+
+      const clearOnInitialForeground = () => {
+        if (document.visibilityState === 'visible') hidePrivacyScreen();
+      };
+      if (document.readyState === 'complete') clearOnInitialForeground();
+      else window.addEventListener('load', clearOnInitialForeground, { once: true });
+    })();
+
+    (function calibrateHomeScreenLayout() {
+      const root = document.documentElement;
+      if (!root.classList.contains('is-home-screen-app')) return;
+
+      const apply = () => {
+        const safeTop = parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0'
+        ) || 0;
+
+        root.style.setProperty('--app-vh', window.innerHeight * 0.01 + 'px');
+
+        if (safeTop > 0) {
+          root.style.setProperty('--home-top-pad', `calc(${safeTop}px + 12px)`);
+        } else {
+          root.style.setProperty('--home-top-pad', `${Math.max(64, window.innerHeight * 0.09)}px`);
+        }
+      };
+
+      apply();
+      window.addEventListener('resize', apply);
+      window.addEventListener('orientationchange', () => setTimeout(apply, 120));
+    })();
 
     let autoSlideInterval;
     let userTouching = false;
@@ -1112,12 +1220,17 @@
       const backSrc = document.getElementById('idBackImg').src;
       document.getElementById('expandedFrontImg').src = frontSrc || backSrc;
       document.getElementById('expandedBackImg').src = backSrc || frontSrc;
-      document.getElementById('expandModal').style.display = 'flex';
+
+      const modal = document.getElementById('expandModal');
+      modal.classList.remove('is-privacy-blurred');
+      modal.style.display = 'flex';
       document.getElementById('expandedCard').classList.remove('is-flipped');
     }
 
     function closeExpandCard() {
-      document.getElementById('expandModal').style.display = 'none';
+      const modal = document.getElementById('expandModal');
+      modal.style.display = 'none';
+      modal.classList.remove('is-privacy-blurred');
     }
 
     function flipExpandedCard() {
