@@ -43,25 +43,6 @@
       overflow: hidden;
     }
 
-    /* ===== Privacy Screen (เบลอใส ไม่มีสีทับ) ===== */
-    #privacy-screen {
-      position: fixed;
-      top: -20px; left: -20px; right: -20px; bottom: -20px;
-      z-index: 2147483647;
-      pointer-events: none;
-      opacity: 0;
-      visibility: hidden;
-      transition: none;
-      background: rgba(255, 255, 255, 0.01);
-    }
-
-    #privacy-screen.is-visible {
-      opacity: 1;
-      visibility: visible;
-      -webkit-backdrop-filter: blur(32px);
-      backdrop-filter: blur(32px);
-    }
-
     body {
       font-family: 'LINE Seed Sans TH', 'Prompt', sans-serif;
       width: 100%;
@@ -248,7 +229,7 @@
       background: #ffffff;
       border-radius: 24px 24px 0 0;
       margin-top: 8px;
-      padding-top: 24px;
+      padding-top: 20px; /* ปรับลดลงเล็กน้อยให้ดึงเนื้อหาขึ้น */
       position: relative;
       z-index: 20;
       padding-bottom: calc(80px + env(safe-area-inset-bottom));
@@ -306,7 +287,15 @@
     .dot-indicator { width: 8px; height: 8px; border-radius: 50%; background-color: #d1d5db; transition: all 0.3s ease; }
     .dot-indicator.active { width: 24px; border-radius: 4px; background-color: #303790; }
 
-    .announcement-vertical-list { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; margin-bottom: 20px; }
+    /* ปรับให้ช่องประกาศชิดหัวข้อมากขึ้น */
+    .announcement-vertical-list { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+      padding: 0 20px; 
+      margin-bottom: 20px; 
+      margin-top: 4px; /* เพิ่มระยะห่างจากหัวข้อเล็กน้อย */
+    }
 
     .announcement-vertical-box {
       width: 100%; height: 80px; border-radius: 12px;
@@ -539,8 +528,6 @@
   </style>
 </head>
 <body>
-  <div id="privacy-screen" aria-hidden="true"></div>
-
   <input type="file" id="uploadBanner1" accept="image/*" onchange="handleImageUpload(event, 'banner1')">
   <input type="file" id="uploadBanner2" accept="image/*" onchange="handleImageUpload(event, 'banner2')">
 
@@ -566,7 +553,7 @@
           </div>
           <div class="user-text">
             <p>สวัสดี <span class="online-badge">ONLINE</span></p>
-            <h1>คุณ ธนันท์รัฐ​ บัวสด</h1>
+            <h1>คุณ ธนันท์รัฐ บัวสด</h1>
           </div>
         </div>
 
@@ -698,13 +685,13 @@
           <div class="dot-indicator" id="dot2"></div>
         </div>
 
-        <div class="section-title" style="margin-top: 10px;">
+        <div class="section-title" style="margin-top: 0; margin-bottom: 10px;">
           <h2>ประกาศทั้งหมด</h2>
           <a href="#">ทั้งหมด <i class="fa-solid fa-chevron-right" style="font-size:11px;"></i></a>
         </div>
 
         <div class="announcement-vertical-list">
-          <div class="announcement-vertical-box" onclick="document.getElementById('uploadAnn1').click()">
+          <div class="announcement-vertical-box" onclick="document.getElementById('uploadAnn1').click()" style="margin-top: 0;">
             <div class="banner-placeholder" id="annBg1"><i class="fa-solid fa-image"></i></div>
             <img src="" alt="Announce 1" class="banner-bg-img" id="annImg1" style="display: none;">
           </div>
@@ -726,7 +713,7 @@
           </div>
         </div>
 
-        <div style="height: 20px;"></div>
+        <div style="height: 10px;"></div>
       </div>
     </div>
 
@@ -848,73 +835,7 @@
   </div>
 
   <script>
-    (function setupAppSwitcherPrivacy() {
-      const screen = document.getElementById('privacy-screen');
-      const app = document.querySelector('.app-container');
-      const expandedCardModal = document.getElementById('expandModal');
-      const root = document.documentElement;
-      if (!screen) return;
-      let edgeSwipeStartY = null;
-
-      const showPrivacyScreen = () => {
-        root.classList.add('is-privacy-active');
-        if (app) app.classList.add('is-privacy-blurred');
-        if (expandedCardModal) expandedCardModal.classList.add('is-privacy-blurred');
-        screen.classList.add('is-visible');
-      };
-      const hidePrivacyScreen = () => {
-        screen.classList.remove('is-visible');
-        root.classList.remove('is-privacy-active');
-        if (app) app.classList.remove('is-privacy-blurred');
-        if (expandedCardModal) expandedCardModal.classList.remove('is-privacy-blurred');
-      };
-
-      hidePrivacyScreen();
-
-      document.addEventListener('touchstart', (event) => {
-        const touch = event.touches && event.touches[0];
-        if (!touch) return;
-        edgeSwipeStartY = touch.clientY >= window.innerHeight - 36 ? touch.clientY : null;
-        if (edgeSwipeStartY === null && document.visibilityState === 'visible') {
-          hidePrivacyScreen();
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchmove', (event) => {
-        const touch = event.touches && event.touches[0];
-        if (edgeSwipeStartY === null || !touch) return;
-        if (edgeSwipeStartY - touch.clientY > 20) {
-          showPrivacyScreen();
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchend', () => {
-        edgeSwipeStartY = null;
-      }, { passive: true });
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') showPrivacyScreen();
-        else hidePrivacyScreen();
-      });
-      document.addEventListener('webkitvisibilitychange', () => {
-        if (document.visibilityState === 'hidden') showPrivacyScreen();
-        else if (document.visibilityState === 'visible') hidePrivacyScreen();
-        else if (document.webkitHidden === true) showPrivacyScreen();
-        else hidePrivacyScreen();
-      });
-
-      window.addEventListener('pagehide', showPrivacyScreen);
-      window.addEventListener('pageshow', hidePrivacyScreen);
-      window.addEventListener('focus', hidePrivacyScreen);
-      window.addEventListener('resume', hidePrivacyScreen);
-      document.addEventListener('resume', hidePrivacyScreen);
-
-      const clearOnInitialForeground = () => {
-        if (document.visibilityState === 'visible') hidePrivacyScreen();
-      };
-      if (document.readyState === 'complete') clearOnInitialForeground();
-      else window.addEventListener('load', clearOnInitialForeground, { once: true });
-    })();
+    // ลบระบบ Privacy Screen ออกตามคำขอ แต่ยังคงตัวแปรและฟังก์ชัน Carousel ไว้ครบถ้วน
 
     let autoSlideInterval;
     let userTouching = false;
